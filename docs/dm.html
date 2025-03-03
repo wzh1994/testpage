@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+<head>
+    <title>欧阳老师随机点名</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ffb6c1 0%, #87cefa 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff69b4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        #nameDisplay {
+            height: 200px;
+            width: 80%;
+            margin: 20px auto;
+            background: rgba(255,255,255,0.8);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            font-weight: normal;
+            transition: all 0.3s;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.5em;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            order: 2;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            background: #ff1493;
+        }
+
+        .selected {
+            color: blue;
+            font-weight: bold;
+            font-size: 3.5em !important;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            order: 1;
+        }
+
+        .speed-control span {
+            white-space: nowrap;
+        }
+
+        .speed-control input[type="range"] {
+            width: 200px;
+            height: 15px;
+        }
+
+        .class-select {
+            font-size: 1.2em;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-size: 80px;">欧阳老师点名啦</h1>
+    <div style="text-align: center;">
+        <label for="classSelect" style="font-size: 30px;">选择班级：</label>
+        <select id="classSelect" class="class-select">
+            <option value="class1">3-4班</option>
+            <option value="class2">2-1班</option>
+            <option value="class3">1-2班</option>
+        </select>
+    </div>
+    <div id="nameDisplay">准备好开始了吗？</div>
+    
+    <div id="controls">
+        <div class="speed-control">
+            <span>速度调节</span>
+            <input type="range" id="speed" min="1" max="100" value="50">
+        </div>
+        <button id="startBtn">🍭开始点名🍭</button>
+    </div>
+
+    <script>
+        const students = {
+            class1: ["陈以然","陈禹翔","程子周","丁恩祺","杜岳霖","付艺佳","富治雯","干雯 ","郭雨菲","郝清扬","李可为","李绍恒","李韫如","卢程熠","亓泽霖","宋明朗","孙昕怡","孙悦然","许娜英","杨庭珲","杨梓萌","尹诺轩","张博奡","张恩硕","张海宁","张奕淳","甄宇逢","周正颉"],
+            class2: ["陈思洁","侯景祥","胡硕 ","胡昕然","黄煜涵","李帛翰","李琪然","李伟豪","李雨嘉","李倬汉","刘一沐","刘政博","马语喆","覃紫涵","徐淡然","杨嘉兴","张都雯","张珈浩","张语萱","张梓渝","周政华","朱佳颖"],
+            class3: ["郭双玲","黄渤惠","贾子扬","姜昊 ","李佳豪","李佳欣","李理 ","李炎蓄","刘丞芮","刘天奕","刘曜杰","马梦菡","王盛睿","王奕涵","王翌晨","谢政泽","张博涵","张兰心","张子怡","郑梓馨"]
+        };
+        let currentClass = "class1";
+        let isRunning = false;
+        let intervalId;
+        const nameDisplay = document.getElementById('nameDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const speedControl = document.getElementById('speed');
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.pitch = 1.2;
+            speechSynthesis.speak(utterance);
+        }
+
+        function getRandomName() {
+            const names = students[currentClass];
+            return names[Math.floor(Math.random() * names.length)];
+        }
+
+        function updateName() {
+            nameDisplay.textContent = getRandomName();
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                nameDisplay.classList.remove('selected');
+                startBtn.textContent = '🛑暂停点名🛑';
+                const speed = 101 - speedControl.value;
+                intervalId = setInterval(updateName, speed);
+            } else {
+                isRunning = false;
+                startBtn.textContent = '🍭开始点名🍭';
+                clearInterval(intervalId);
+                nameDisplay.classList.add('selected');
+                speak(nameDisplay.textContent);
+            }
+        });
+
+        speedControl.addEventListener('input', () => {
+            if (isRunning) {
+                clearInterval(intervalId);
+                const speed = 101 - speedControl.value;
+                intervalId = setInterval(updateName, speed);
+            }
+        });
+
+        classSelect.addEventListener('change', () => {
+            currentClass = classSelect.value;
+            nameDisplay.textContent = "准备好开始了吗？";
+            nameDisplay.classList.remove('selected');
+        });
+    </script>
+</body>
+</html>
